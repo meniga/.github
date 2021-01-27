@@ -1,0 +1,44 @@
+name: Auto-merge master to develop
+
+on:
+  push:
+    branches:
+    - master
+
+jobs:
+  automerge:
+    name: Merge master into develop or create pull request on merge failure
+    runs-on: ubuntu-20.04
+    steps:
+    - name: checkout
+      uses: actions/checkout@v2
+    ##
+    ## Try to merge master into develop
+    - name: merge
+      uses: mtanzi/action-automerge@v1
+      id: merge
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        source: master
+        target: develop
+        webhook_url: "" # If present add the Slack webhook
+    ##
+    ## In case merging fails, then create a PR for master to develop
+    - name: pull-request
+      uses: repo-sync/pull-request@v2.5
+      id: auto-pr
+      if: ${{ failure() }}
+      with:
+        destination_branch: develop
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        pr_title: "Auto PR from master to develop"
+        pr_body: |
+          :crown: This pull request was created automatically because there are changes in
+          the *master* branch that need to be merged with the *develop* branch.
+        pr_reviewer: ""
+        pr_assignee: ""
+        pr_label: "auto-pr"
+    - name: output-url
+      run: echo ${{steps.open-pr.outputs.pr_url}}
+    - name: output-number
+      run: echo ${{steps.open-pr.outputs.pr_number}}

@@ -1,0 +1,7 @@
+{
+  "name": "Auto-merge master to develop",
+  "description": "This workflow attempts to merge master with develop. If merging fails it creates a PR.",
+  "iconName": "git-merge",
+  "categories": [],
+  "filePatterns": []
+}
