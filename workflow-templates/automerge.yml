@@ -1,13 +1,23 @@
-name: Auto-merge master to develop
+name: Auto-merge branches
+
+inputs:
+  source_branch:
+    description: 'Source branch for the merge'
+    required: true
+    default: master
+  target_branch:
+    description: 'Target branch for the merge'
+    required: true
+    default: develop
 
 on:
   push:
     branches:
-    - master
+    - ${{ inputs.source_branch }}
 
 jobs:
   automerge:
-    name: Merge master into develop or create pull request on merge failure
+    name: Merge ${{ inputs.source_branch }} into ${{ inputs.target_branch }} or create pull request on merge failure
     runs-on: ubuntu-20.04
     steps:
     - name: checkout
@@ -19,8 +29,8 @@ jobs:
       id: merge
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        source: master
-        target: develop
+        source: ${{ inputs.source_branch }}
+        target: ${{ inputs.target_branch }}
         webhook_url: "" # If present add the Slack webhook
     ##
     ## In case merging fails, then create a PR for master to develop
@@ -29,16 +39,16 @@ jobs:
       id: auto-pr
       if: ${{ failure() }}
       with:
-        destination_branch: develop
+        destination_branch: ${{ inputs.target_branch }}
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        pr_title: "Auto PR from master to develop"
+        pr_title: "Auto PR from ${{ inputs.source_branch }} to ${{ inputs.target_branch }}"
         pr_body: |
           :crown: This pull request was created automatically because there are changes in
-          the *master* branch that need to be merged with the *develop* branch.
+          the *${{ inputs.source_branch }}* branch that need to be merged with the *${{ inputs.target_branch }}* branch.
         pr_reviewer: ""
         pr_assignee: ""
         pr_label: "auto-pr"
     - name: output-url
-      run: echo ${{steps.open-pr.outputs.pr_url}}
+      run: echo ${{ steps.open-pr.outputs.pr_url }}
     - name: output-number
-      run: echo ${{steps.open-pr.outputs.pr_number}}
+      run: echo ${{ steps.open-pr.outputs.pr_number }}
