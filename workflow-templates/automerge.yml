@@ -1,14 +1,8 @@
 name: Auto-merge branches
 
-inputs:
-  source_branch:
-    description: 'Source branch for the merge'
-    required: true
-    default: master
-  target_branch:
-    description: 'Target branch for the merge'
-    required: true
-    default: develop
+env:
+  SOURCE_BRANCH: master
+  TARGET_BRANCH: develop
 
 on:
   push:
@@ -17,13 +11,13 @@ on:
 
 jobs:
   automerge:
-    name: Merge ${{ inputs.source_branch }} into ${{ inputs.target_branch }} or create pull request on merge failure
+    name: Merge source branch into target branch or create pull request on merge failure
     runs-on: ubuntu-20.04
     steps:
     - name: checkout
       uses: actions/checkout@v2
     ##
-    ## Try to merge master into develop
+    ## Try to merge
     - name: merge
       uses: mtanzi/action-automerge@v1
       id: merge
@@ -33,7 +27,7 @@ jobs:
         target: ${{ inputs.target_branch }}
         webhook_url: "" # If present add the Slack webhook
     ##
-    ## In case merging fails, then create a PR for master to develop
+    ## In case merging fails, then create a PR
     - name: pull-request
       uses: repo-sync/pull-request@v2.5
       id: auto-pr
@@ -49,6 +43,4 @@ jobs:
         pr_assignee: ""
         pr_label: "auto-pr"
     - name: output-url
-      run: echo ${{ steps.open-pr.outputs.pr_url }}
-    - name: output-number
-      run: echo ${{ steps.open-pr.outputs.pr_number }}
+      run: echo "Pull Request URL -> ${{ steps.open-pr.outputs.pr_url }}"
