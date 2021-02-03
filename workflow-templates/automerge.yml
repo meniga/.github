@@ -23,8 +23,8 @@ jobs:
       id: merge
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        source: ${{ inputs.source_branch }}
-        target: ${{ inputs.target_branch }}
+        source: ${{ env.SOURCE_BRANCH }}
+        target: ${{ env.TARGET_BRANCH }}
         webhook_url: "" # If present add the Slack webhook
     ##
     ## In case merging fails, then create a PR
@@ -33,12 +33,12 @@ jobs:
       id: auto-pr
       if: ${{ failure() }}
       with:
-        destination_branch: ${{ inputs.target_branch }}
+        destination_branch: ${{ env.TARGET_BRANCH }}
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        pr_title: "Auto PR from ${{ inputs.source_branch }} to ${{ inputs.target_branch }}"
+        pr_title: "Auto PR from ${{ env.SOURCE_BRANCH }} to ${{ env.TARGET_BRANCH }}"
         pr_body: |
           :crown: This pull request was created automatically because there are changes in
-          the *${{ inputs.source_branch }}* branch that need to be merged with the *${{ inputs.target_branch }}* branch.
+          the *${{ env.SOURCE_BRANCH }}* branch that need to be merged with the *${{ env.TARGET_BRANCH }}* branch.
         pr_reviewer: ""
         pr_assignee: ""
         pr_label: "auto-pr"
