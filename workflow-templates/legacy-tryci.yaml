@@ -11,7 +11,7 @@ on:
     - '*.md'
 
 jobs:
-  ci:
+  tryci:
     # This will execute the workflow on our self-hosted Windows WM
     runs-on: [self-hosted, Windows]
 
