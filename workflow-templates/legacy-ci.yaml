@@ -1,0 +1,35 @@
+name: Legacy CI
+
+on:
+  push:
+    branches:
+    - master
+    tags: ['*']
+    paths-ignore:
+    - '.github/**'
+    - '!.github/workflows/legacy-ci.yaml'
+    - 'docs/**'
+    - '*.md'
+
+  pull-request:
+    branches:
+    - master
+    paths-ignore:
+    - '.github/**'
+    - '!.github/workflows/legacy-ci.yaml'
+    - 'docs/**'
+    - '*.md'
+
+jobs:
+  ci:
+    # This will execute the workflow on our self-hosted Windows WM
+    runs-on: [self-hosted, Windows]
+
+    steps:
+    - uses: actions/checkout@v2
+      # Uncomment to fetch all history for all branches and tags
+      # with:
+      #   fetch-depth: 0
+
+    - name: Run CI task using psake
+      run: psake ci
