@@ -1,35 +1,37 @@
 name: Legacy CI
 
+# What should trigger this workflow to be executed
 on:
+  # Define which push events should trigger this workflow
   push:
-    branches:
-    - master
+    # Trigger a build when pushing to any branch or when tagging
+    branches: ['**']
     tags: ['*']
+
+    # Except when the only files that changed match these patterns
     paths-ignore:
+    # Ignore everything in the .github directory except the legacy-ci.yaml workflow file
     - '.github/**'
     - '!.github/workflows/legacy-ci.yaml'
     - 'docs/**'
     - '*.md'
 
-  pull_request:
-    branches:
-    - master
-    paths-ignore:
-    - '.github/**'
-    - '!.github/workflows/legacy-ci.yaml'
-    - 'docs/**'
-    - '*.md'
+  ## Uncomment to run this workflow every Friday at midnight
+  #schedule:
+  #- cron:  '0 0 * * FRI'
 
+# The actual workflow
 jobs:
   ci:
-    # This will execute the workflow on our self-hosted Windows WM
+    # This will execute the workflow on our self-hosted Windows VM
     runs-on: [self-hosted, Windows]
 
     steps:
     - uses: actions/checkout@v2
-      # Uncomment to fetch all history for all branches and tags
-      # with:
-      #   fetch-depth: 0
+      # Remove if you don't need to fetch all history for all branches and tags
+      with:
+        fetch-depth: 0
 
+    # Adjust as needed, e.g. psake tryci to run the TryCI task
     - name: Run CI task using psake
       run: psake ci
