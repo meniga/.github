@@ -1,7 +1,7 @@
 {
   "name": "Publish to GitHub Packages",
   "description": "Publishes a NuGet packages to the Meniga organization GitHub Package registry",
-  "iconName": "",
+  "iconName": "github-packages",
   "categories": [],
   "filePatterns": []
 }
