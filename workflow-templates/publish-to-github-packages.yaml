@@ -1,0 +1,71 @@
+## This workflow publishes a package to the Meniga GitHub Package registry
+##
+## Make sure to adjust the workflow as needed.
+## Depending on your project name, file structure, etc.
+## Replace all values enclosed in <>
+
+name: Publish to GitHub Packages
+
+env:
+  NUGET_URL: https://nuget.pkg.github.com/meniga/index.json
+  ## Replace <project-name>
+  ## Example: Meniga.Sample.Library
+  PROJECT_NAME: <project-name>
+
+on:
+  push:
+    ## Adjust if needed
+    branches: ['$default-branch']
+
+    paths-ignore:
+    - '.github/**'
+    - '!.github/workflows/publish-to-github-packages.yaml'
+    - 'docs/**'
+    - '*.md'
+
+  ## Manual trigger
+  workflow_dispatch:
+
+jobs:
+  package-push:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Install GitVersion
+      uses: gittools/actions/gitversion/setup@v0.9.9
+      with:
+        versionSpec: '5.5.x'
+
+      ## Update versions in specified file
+      ## Replace <path-to-assembly-info-file>
+      ## Example: ./src/Meniga.Sample.Library/Properties/AssemblyInfo.cs
+    - name: Use GitVersion
+      id: gitversion
+      uses: gittools/actions/gitversion/execute@v0.9.9
+      with:
+        updateAssemblyInfo: true
+        updateAssemblyInfoFilename: <path-to-assembly-info-file>
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.102
+
+      ## Adjust project path if needed
+    - name: Build and package
+      run: |
+        dotnet pack ./src/${{ env.PROJECT_NAME }} \
+        -c Release \
+        -o ./out \
+        -p:PackageVersion=${{ steps.gitversion.outputs.nuGetVersion }}
+
+    - name: Publish to GitHub Packages
+      run: |
+        dotnet nuget push \
+        ./out/${{ env.PROJECT_NAME }}.${{ steps.gitversion.outputs.nuGetVersion }}.nupkg \
+        --source ${{ env.NUGET_URL }} \
+        --api-key ${{ secrets.GITHUB_TOKEN }}
