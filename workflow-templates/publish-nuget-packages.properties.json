@@ -1,0 +1,7 @@
+{
+  "name": "Publish NuGet packages to GitHub Packages",
+  "description": "Publish NuGet packages to the GitHub Package registry",
+  "iconName": "github-packages",
+  "categories": [],
+  "filePatterns": []
+}

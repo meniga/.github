@@ -1,0 +1,7 @@
+{
+  "name": "Publish .NET Framework NuGet packages",
+  "description": "Publish .NET Framework NuGet packages to the GitHub Package registry. Note that this workflow will run on a Windows cloud runner",
+  "iconName": "dotnet",
+  "categories": [],
+  "filePatterns": []
+}

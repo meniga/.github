@@ -1,4 +1,5 @@
-## This workflow publishes a package to the Meniga GitHub Package registry
+## This workflow publishes .NET Core NuGet packages
+## to the Meniga GitHub Package registry
 ##
 ## Make sure to adjust the workflow as needed.
 ## Depending on your project name, file structure, etc.
@@ -8,9 +9,9 @@ name: Publish to GitHub Packages
 
 env:
   NUGET_URL: https://nuget.pkg.github.com/meniga/index.json
-  ## Replace <project-name>
+  ## Replace <solution-file>
   ## Example: Meniga.Sample.Library
-  PROJECT_NAME: <project-name>
+  SOLUTION_FILE: <solution-file>
 
 on:
   push:
