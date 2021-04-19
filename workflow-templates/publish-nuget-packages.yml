@@ -20,7 +20,7 @@ on:
 
     paths-ignore:
     - '.github/**'
-    - '!.github/workflows/publish-to-github-packages.yaml'
+    - '!.github/workflows/publish-to-github-packages.yml'
     - 'docs/**'
     - '*.md'
 

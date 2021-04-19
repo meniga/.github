@@ -5,13 +5,16 @@
 ## Depending on your project name, file structure, etc.
 ## Replace all values enclosed in <>
 
-name: Publish .NET Framework NuGet packages
+name: Publish to GitHub Packages (.NET Framework)
 
 env:
   NUGET_URL: https://nuget.pkg.github.com/meniga/index.json
   ## Replace <solution-file>
-  ## Example: Meniga.Sample.Library
+  ## Example: src/SampleService.sln
   SOLUTION_FILE: <solution-file>
+  ## Replace <project-list>
+  ## Example: ("src\Meniga.Runtime.Contracts\Meniga.Runtime.Contracts.csproj","src\Meniga.Runtime.Wcf\Meniga.Runtime.Wcf.csproj")
+  PROJECT_LIST: <project-list> # List of projects to package
 
 on:
   push:
@@ -20,7 +23,7 @@ on:
 
     paths-ignore:
     - '.github/**'
-    - '!.github/workflows/publish-to-github-packages.yaml'
+    - '!.github/workflows/publish-dotnet-framework-nuget-packages.yml'
     - 'docs/**'
     - '*.md'
 
@@ -36,37 +39,63 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Install GitVersion
-      uses: gittools/actions/gitversion/setup@v0.9.9
-      with:
-        versionSpec: '5.5.x'
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
 
-      ## Update versions in specified file
-      ## Replace <path-to-assembly-info-file>
-      ## Example: ./src/Meniga.Sample.Library/Properties/AssemblyInfo.cs
-    - name: Use GitVersion
-      id: gitversion
-      uses: gittools/actions/gitversion/execute@v0.9.9
+    ## If you enable caching for the "NuGet Restore" step then it is important
+    ## that the nuget-version matches the NuGet version used when the committed
+    ## lock files were generated. Different NuGet versions can generate
+    ## different hashes for the same package.
+    - name: Setup NuGet
+      uses: nuget/setup-nuget@v1
       with:
-        updateAssemblyInfo: true
-        updateAssemblyInfoFilename: <path-to-assembly-info-file>
+        nuget-version: 'latest'
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 5.0.102
-
-      ## Adjust project path if needed
-    - name: Build and package
+    ## Prints the NuGet version of the git repository to standard out
+    - name: Print NugetVersion
+      id: version
       run: |
-        dotnet pack ./src/${{ env.PROJECT_NAME }} \
-        -c Release \
-        -o ./out \
-        -p:PackageVersion=${{ steps.gitversion.outputs.nuGetVersion }}
+        $packageVersion = gitversion /showvariable nuGetVersion
+        echo "::set-output name=packageVersion::$packageVersion"
 
-    - name: Publish to GitHub Packages
+    ## Update the credentials for the github package source
+    - name: Add Meniga NuGet Source
       run: |
-        dotnet nuget push \
-        ./out/${{ env.PROJECT_NAME }}.${{ steps.gitversion.outputs.nuGetVersion }}.nupkg \
-        --source ${{ env.NUGET_URL }} \
-        --api-key ${{ secrets.GITHUB_TOKEN }}
+        nuget sources update -Name "github" -Username "meniga" -Password "${{ secrets.MENIGA_NUGET_PASSWORD }}"
+
+    ## Caching requires the use of NuGet package lock files and is therefore
+    ## disabled by default.
+    ## Read about Lock Files: http://blog.ctaggart.com/2019/03/using-nuget-lock-file-for-reproducible.html
+    ##
+    ## Uncomment to enable and also the if statement in the "NuGet Restore" step
+    # - name: Cache NuGet Restore
+    #   uses: actions/cache@v2
+    #   id: cache
+    #   with:
+    #     path: ~/.nuget/packages
+    #     key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+
+    - name: NuGet Restore
+      # if: steps.cache.outputs.cache-hit != 'true'
+      run: nuget restore ${{ env.SOLUTION_FILE }}
+
+    - name: MSBuild
+      run: |
+        msbuild /t:restore,build /v:q /nologo /P:Configuration=Release ${{ env.SOLUTION_FILE }} /p:RestoreLockedMode=true /p:VisualStudioVersion=14.0 '/p:AllowedReferenceRelatedFileExtensions=".pdb;.xml;.pri"'
+
+    - name: NuGet Package
+      run: |
+        echo "Using package version: ${{ steps.version.outputs.packageVersion }}"
+        foreach($proj in ${{ env.PROJECT_LIST }})
+        {
+          echo "Packaging project: $proj"
+          nuget pack $proj -Version "${{ steps.version.outputs.packageVersion }}" -Verbosity "detailed" -OutputDirectory "./out" -Properties "Configuration=Release;DependencyVersion=${{ steps.version.outputs.packageVersion }}"
+        }
+
+    ## List the packages being pushed
+    - name: List Output Directory
+      run: ls ./out
+
+    ## Push all the packages in the ./out directory
+    - name: NuGet Push
+      run: nuget push ./out/*.nupkg -ApiKey "${{ secrets.GITHUB_TOKEN }}" -Source "github"
