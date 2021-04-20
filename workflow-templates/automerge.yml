@@ -12,11 +12,11 @@ on:
 jobs:
   automerge:
     name: Merge source branch into target branch or create pull request on merge failure
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
     - name: checkout
       uses: actions/checkout@v2
-    ##
+
     ## Try to merge
     - name: merge
       uses: mtanzi/action-automerge@v1
@@ -26,7 +26,7 @@ jobs:
         source: ${{ env.SOURCE_BRANCH }}
         target: ${{ env.TARGET_BRANCH }}
         webhook_url: "" # If present add the Slack webhook
-    ##
+
     ## In case merging fails, then create a PR
     - name: pull-request
       uses: repo-sync/pull-request@v2.5
@@ -42,5 +42,7 @@ jobs:
         pr_reviewer: ""
         pr_assignee: ""
         pr_label: "auto-pr"
+
+    ## Print the URL of the pull request
     - name: output-url
       run: echo "Pull Request URL -> ${{ steps.open-pr.outputs.pr_url }}"
