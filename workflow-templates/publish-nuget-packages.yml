@@ -9,18 +9,18 @@ name: Publish to GitHub Packages
 
 env:
   NUGET_URL: https://nuget.pkg.github.com/meniga/index.json
-  ## Replace <solution-file>
+  ## Replace <project-name>
   ## Example: Meniga.Sample.Library
-  SOLUTION_FILE: <solution-file>
+  PROJECT_NAME: <project-name>
 
 on:
   push:
     ## Adjust if needed
-    branches: ['$default-branch']
+    branches: ['**']
 
     paths-ignore:
     - '.github/**'
-    - '!.github/workflows/publish-to-github-packages.yml'
+    - '!.github/workflows/publish-nuget-packages.yml'
     - 'docs/**'
     - '*.md'
 
@@ -54,7 +54,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 5.0.102
+        dotnet-version: '5.0.x'
 
       ## Adjust project path if needed
     - name: Build and package
@@ -64,7 +64,11 @@ jobs:
         -o ./out \
         -p:PackageVersion=${{ steps.gitversion.outputs.nuGetVersion }}
 
+    ## Only push the package if workflow was triggered on master branch
+    ## Remove the if statement if you always want to push packages
+    ## or adjust as needed depending on your repository branch settings
     - name: Publish to GitHub Packages
+      if: endsWith(github.ref, '/master') || endsWith(github.ref, '/main')
       run: |
         dotnet nuget push \
         ./out/${{ env.PROJECT_NAME }}.${{ steps.gitversion.outputs.nuGetVersion }}.nupkg \
