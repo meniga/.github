@@ -10,9 +10,9 @@ on:
 
     # Except when the only files that changed match these patterns
     paths-ignore:
-    # Ignore everything in the .github directory except the legacy-ci.yaml workflow file
+    # Ignore everything in the .github directory except the legacy-ci.yml workflow file
     - '.github/**'
-    - '!.github/workflows/legacy-ci.yaml'
+    - '!.github/workflows/legacy-ci.yml'
     - 'docs/**'
     - '*.md'
 
