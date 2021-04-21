@@ -31,6 +31,14 @@ jobs:
       # Remove if you don't need to fetch all history for all branches and tags
       with:
         fetch-depth: 0
+        
+    # Remove this step if you are not using submodules
+    #
+    # Fetching submodules with the actions/checkout action fails because
+    # it generates an invalid Windows path when storing the public SSH key
+    # Tip: Add the --recursive flag if your submodules include submodules
+    - name: Update git submodules
+      run: git submodules update --init
 
     # Adjust as needed, e.g. psake tryci to run the TryCI task
     - name: Run CI task using psake
