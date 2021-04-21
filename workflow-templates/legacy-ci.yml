@@ -36,9 +36,9 @@ jobs:
     #
     # Fetching submodules with the actions/checkout action fails because
     # it generates an invalid Windows path when storing the public SSH key
-    # Tip: Add the --recursive flag if your submodules include submodules
+    # Tip: Add the --recursive flag if your submodules include other submodules
     - name: Update git submodules
-      run: git submodules update --init
+      run: git submodule update --init
 
     # Adjust as needed, e.g. psake tryci to run the TryCI task
     - name: Run CI task using psake
