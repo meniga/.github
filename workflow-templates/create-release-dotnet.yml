@@ -8,6 +8,8 @@
 name: Create Release (.NET)
 
 env:
+  # Example: src/Meniga.Sample.Service/Properties/AssemblyInfo.cs
+  ASSEMBLY_INFO_FILE_PATH:
   # Example: src/Meniga.Sample.Service/Meniga.Sample.Service.csproj
   CSPROJ_FILE: <path-to-project-file>
   # Example: sample-service
@@ -57,9 +59,7 @@ jobs:
       uses: gittools/actions/gitversion/execute@v0.9.9
       with:
         updateAssemblyInfo: true
-        # Replace with the path to your AssemblyInfo file
-        # Example: ./src/Meniga.Sample.Service/Properties/AssemblyInfo.cs
-        updateAssemblyInfoFilename: <path-to-assembly-file>
+        updateAssemblyInfoFilename: ${{ env.ASSEMBLY_INFO_FILE_PATH }}
 
     - name: Set up dotnet
       uses: actions/setup-dotnet@v1

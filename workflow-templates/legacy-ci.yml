@@ -1,3 +1,6 @@
+# In the last step that publishes a GitHub Release, be sure to adjust
+# the 'files' argument with the correct path of the built artifacts
+# that should be included in the release. Typically: build/Latest
 name: Legacy CI
 
 # What should trigger this workflow to be executed
@@ -31,7 +34,7 @@ jobs:
       # Remove if you don't need to fetch all history for all branches and tags
       with:
         fetch-depth: 0
-        
+
     # Remove this step if you are not using submodules
     #
     # Fetching submodules with the actions/checkout action fails because
@@ -43,3 +46,20 @@ jobs:
     # Adjust as needed, e.g. psake tryci to run the TryCI task
     - name: Run CI task using psake
       run: psake ci
+
+    # For more information on how to customize the release
+    # Ideally, you would for example supply the action with a body that
+    # further explains the changes in the release
+    # ref: https://github.com/softprops/action-gh-release#-customizing
+    - name: Create release (if tag was pushed)
+      if: startsWith(github.ref, 'refs/tags')
+      uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        draft: false
+        prerelease: false
+        # Adjust as needed, should point to the path(s) where the CI step
+        # outputs the built application/packages
+        # Newline-delimited globs of paths to assets to upload for release
+        files: build/Latest
