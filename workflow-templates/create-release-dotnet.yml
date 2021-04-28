@@ -9,7 +9,7 @@ name: Create Release (.NET)
 
 env:
   # Example: src/Meniga.Sample.Service/Properties/AssemblyInfo.cs
-  ASSEMBLY_INFO_FILE_PATH:
+  ASSEMBLY_INFO_FILE_PATH: <path-to-assembly-info-file>
   # Example: src/Meniga.Sample.Service/Meniga.Sample.Service.csproj
   CSPROJ_FILE: <path-to-project-file>
   # Example: sample-service
