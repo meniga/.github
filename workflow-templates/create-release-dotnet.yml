@@ -1,0 +1,112 @@
+## This workflow creates a GitHub Release when a new tag is pushed
+## It will build the application for Linux-x64 and Windows-x64 platforms
+## You can change this behavior by modifying the matrix definition below
+##
+## Make sure to adjust the workflow as needed.
+## Depending on your project name, file structure, etc.
+## Replace all values enclosed in <>
+name: Create Release (.NET)
+
+env:
+  # Example: src/Meniga.Sample.Service/Meniga.Sample.Service.csproj
+  CSPROJ_FILE: <path-to-project-file>
+  # Example: sample-service
+  SERVICE_NAME: <service-name>
+  NUGET_URL: https://nuget.pkg.github.com/meniga/index.json
+  NUGET_USERNAME: meniga
+
+# What should trigger this workflow to be executed
+on:
+  # Run this workflow when a tag is pushed
+  push:
+    tags: ['*']
+
+jobs:
+  create-release:
+    name: Create Release
+
+    # This matrix strategy will run this workflow twice
+    # Once for Linux and again for Windows
+    strategy:
+      matrix:
+        kind:
+        - linux
+        - windows
+        include:
+        - kind: linux
+          os: ubuntu-latest
+          target: linux-x64
+        - kind: windows
+          os: windows-latest
+          target: win-x64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Set up GitVersion
+      uses: gittools/actions/gitversion/setup@v0.9.9
+      with:
+        versionSpec: '5.5.x'
+
+    - name: Update AssemblyInfo
+      uses: gittools/actions/gitversion/execute@v0.9.9
+      with:
+        updateAssemblyInfo: true
+        # Replace with the path to your AssemblyInfo file
+        # Example: ./src/Meniga.Sample.Service/Properties/AssemblyInfo.cs
+        updateAssemblyInfoFilename: <path-to-assembly-file>
+
+    - name: Set up dotnet
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '5.0.x'
+
+    ## We need to add the credentials for Meniga's GitHub Package registry
+    ## in order to pull packages when building the application
+    - name: Add Meniga NuGet Source
+      shell: bash
+      run: |
+        dotnet nuget add source \
+        --store-password-in-clear-text \
+        -n github \
+        -u ${{ env.NUGET_USERNAME }} \
+        -p ${{ secrets.MENIGA_NUGET_PASSWORD }} \
+        ${{ env.NUGET_URL }}
+
+    - name: Build
+      shell: bash
+      run: |
+        # Extract the tag
+        tag="${GITHUB_REF##*/}"
+        release_name="${{ env.SERVICE_NAME }}-$tag-${{ matrix.target }}"
+
+        # Build everything
+        dotnet publish ${{ env.CSPROJ_FILE }} \
+        --framework net5.0 \
+        --runtime "${{ matrix.target }}" \
+        -c Release \
+        -o "$release_name"
+
+        # Pack files
+        if [ "${{ matrix.target }}" == "win-x64" ]; then
+          7z a -tzip "${release_name}.zip" "./${release_name}/*"
+        else
+          tar czvf "${release_name}.tar.gz" "$release_name"
+        fi
+
+        # Delete output directory
+        rm -r "$release_name"
+
+    - name: Publish release
+      uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        draft: false
+        prerelease: false
+        files: '${{ env.SERVICE_NAME }}-*'

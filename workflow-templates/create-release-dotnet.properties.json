@@ -1,0 +1,7 @@
+{
+  "name": "Create Release (.NET)",
+  "description": "This workflow creates a GitHub Release when a tag is pushed to a GitHub repository. It uses a matrix strategy to build the application twice, once for Linux and again for Windows.",
+  "iconName": "dotnet",
+  "categories": [],
+  "filePatterns": []
+}
