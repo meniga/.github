@@ -11,6 +11,10 @@ fails then a pull request is created.
 
 This workflow demonstrates how you can create a GitHub Release. This workflow targets the `linux-x64` and `windows-x64` platforms and creates a release for each one.
 
+## Container CI
+
+This workflow demonstrates how to build a docker container.
+
 ## psake CI
 
 This workflow demonstrates how you can use a self-hosted Windows runner
