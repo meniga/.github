@@ -7,13 +7,21 @@ You can include this in your project to always attempt to merge changes
 made on one branch (`source`) with another branch (`target`). If the merge
 fails then a pull request is created.
 
-## Legacy CI
+## Create Release (.NET)
 
-This workflow simply demonstrates how you can use a self-hosted Windows runner
-to migrate a legacy build process that relies on `psake` as an example.
+This workflow demonstrates how you can create a GitHub Release. This workflow targets the `linux-x64` and `windows-x64` platforms and creates a release for each one.
+
+## psake CI
+
+This workflow demonstrates how you can use a self-hosted Windows runner
+to migrate a legacy build process that relies on internal tooling and `psake`.
 
 > This workflow should only be used as a temporary solution for build processes
 that still rely on legacy build tools and cannot migrate to cloud runners 
+
+## psake TryCI
+
+Same as psake CI, except for running `psake tryci`
 
 ## Publish NuGet Packages (.NET)
 
@@ -23,4 +31,4 @@ registry. This workflow is not compatible with .NET Framework projects.
 ## Publish NuGet Packages (.NET Framework)
 
 Demonstrates how you can publish NuGet packages to the Meniga GitHub Package
-registry. Only meant for .NET Framework projects.
+registry. Only meant for .NET Framework projects that rely on Windows for building.
