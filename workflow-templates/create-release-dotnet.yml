@@ -15,7 +15,6 @@ env:
   # Example: sample-service
   SERVICE_NAME: <service-name>
   NUGET_URL: https://nuget.pkg.github.com/meniga/index.json
-  NUGET_USERNAME: meniga
 
 # What should trigger this workflow to be executed
 on:
@@ -74,7 +73,7 @@ jobs:
         dotnet nuget add source \
         --store-password-in-clear-text \
         -n github \
-        -u ${{ env.NUGET_USERNAME }} \
+        -u ${{ secrets.MENIGA_NUGET_USERNAME }} \
         -p ${{ secrets.MENIGA_NUGET_PASSWORD }} \
         ${{ env.NUGET_URL }}
 

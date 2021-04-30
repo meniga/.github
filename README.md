@@ -9,11 +9,15 @@ fails then a pull request is created.
 
 ## Create Release (.NET)
 
-This workflow demonstrates how you can create a GitHub Release. This workflow targets the `linux-x64` and `windows-x64` platforms and creates a release for each one.
+This workflow demonstrates how you can create a GitHub Release. It targets the 
+`linux-x64` and `windows-x64` platforms and creates a release for each one.
 
 ## Container CI
 
-This workflow demonstrates how to build a docker container.
+This workflow demonstrates how to build a docker container using docker buildx 
+and caching image layers to GitHub cache to for faster builds. Additionally it 
+lints the Dockerfile, scans for vulnerabilities and pushes the container if 
+built of specific branches or a tag was pushed.
 
 ## psake CI
 
@@ -35,4 +39,5 @@ registry. This workflow is not compatible with .NET Framework projects.
 ## Publish NuGet Packages (.NET Framework)
 
 Demonstrates how you can publish NuGet packages to the Meniga GitHub Package
-registry. Only meant for .NET Framework projects that rely on Windows for building.
+registry. Only meant for .NET Framework projects that rely on Windows for 
+building.

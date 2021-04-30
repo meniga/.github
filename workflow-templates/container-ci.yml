@@ -1,0 +1,170 @@
+## This workflow demonstrates how to build a docker container and utilize
+## docker buildx and GitHub cache to cache the image layers for faster builds
+##
+## The workflow is split up into two jobs; build and push
+##
+## build: Builds the container image and loads it into the local docker registry
+### Additionally, it scans the Dockerfile for best practices using Dockle and
+### the docker container for vulnerabilities using Trivy.
+### The workflow can be triggered manually and instructed to skip the container
+### scanning steps, in case it becomes a blocker.
+### The build job will always run when this workflow is triggered.
+##
+## push: Uses the cache from the build job to push the container image to the
+### Meniga docker registry, with a different tag than was used in the build job.
+### This job only runs when a change was pushed to the master or develop
+### branches or if a git tag was pushed.
+##
+## Make sure to adjust the workflow as needed.
+## Depending on your project name, file structure, etc.
+## Replace all values enclosed in <>
+name: Container CI
+
+env:
+  # Path to AssemblyInfo file that should be updated with GitVersion
+  # Example: ./src/Meniga.Sample.Service/Properties/AssemblyInfo.cs
+  ASSEMBLY_INFO_FILE_PATH: <path-to-assembly-info-file>
+  # Example: sample-service
+  SERVICE_NAME: <service-name>
+  # Where to push the container image
+  CONTAINER_REGISTRY: menigaacr.azurecr.io
+  # Where to consume NuGet packages
+  NUGET_URL: https://nuget.pkg.github.com/meniga/index.json
+
+on:
+  push:
+    branches: ['**']
+    tags: ['*']
+    paths-ignore:
+    - '.github/**'
+    - '!.github/workflows/ci.yml'
+    - 'docs/**'
+    - '*.md'
+
+  workflow_dispatch:
+    inputs:
+      skipContainerLinting:
+        description: 'Skip step that lints the container for best practices'
+        required: false
+        default: 'false'
+      skipImageScanning:
+        description: 'Skip steps that scan the container image for vulnerabilities'
+        required: false
+        default: 'false'
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    env:
+      ## Create short sha
+      SHA8: ${GITHUB_SHA::8}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Set up GitVersion
+      uses: gittools/actions/gitversion/setup@v0.9.9
+      with:
+        versionSpec: '5.5.x'
+
+    - name: Update AssemblyInfo
+      uses: gittools/actions/gitversion/execute@v0.9.9
+      with:
+        updateAssemblyInfo: true
+        updateAssemblyInfoFilename: ${{ env.ASSEMBLY_INFO_FILE_PATH }}
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+      with:
+        install: true
+        version: latest
+
+    - name: Cache Docker layers
+      uses: actions/cache@v2
+      with:
+        path: /tmp/.buildx-cache
+        key: ${{ runner.os }}-buildx-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-buildx-
+
+    - name: Docker build (Buildx)
+      run: |
+        defaultImageTag="${{ env.SERVICE_NAME }}:${{ env.SHA8 }}"
+        echo "DEFAULT_IMAGE_TAG=$defaultImageTag" >> $GITHUB_ENV
+
+        docker buildx build \
+        --cache-from "type=local,src=/tmp/.buildx-cache" \
+        --cache-to "type=local,dest=/tmp/.buildx-cache" \
+        --build-arg "NUGET_URL=${{ env.NUGET_URL }}" \
+        --build-arg "NUGET_USERNAME=${{ secrets.MENIGA_NUGET_USERNAME }}" \
+        --build-arg "NUGET_PASSWORD=${{ secrets.MENIGA_NUGET_PASSWORD }}" \
+        --load \
+        --tag $defaultImageTag ./src
+
+    - if: github.event.inputs.skipImageScanning != 'true'
+      name: Run vulnerability scan with Trivy
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ env.DEFAULT_IMAGE_TAG }}
+        format: table
+        exit-code: 1
+        ignore-unfixed: true
+
+    - if: github.event.inputs.skipContainerLinting != 'true'
+      name: Lint container for best practices using Dockle
+      uses: docker://goodwithtech/dockle:v0.3.1
+      with:
+        args: --exit-code 0 ${{ env.DEFAULT_IMAGE_TAG }}
+
+  push:
+    ## Only push images if a tag was pushed or an image built from the
+    ## master or develop branches
+    if: |
+      startsWith(github.ref, 'refs/tags')
+      || endsWith(github.ref, '/master')
+      || endsWith(github.ref, '/develop')
+
+    ## This job depends on the built image in the 'build' job
+    needs: build
+
+    runs-on: ubuntu-20.04
+
+    env:
+      ## Create short git sha
+      SHA8: ${GITHUB_SHA::8}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Cache Docker layers
+      uses: actions/cache@v2
+      id: cache
+      with:
+        path: /tmp/.buildx-cache
+        key: ${{ runner.os }}-buildx-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-buildx-
+
+    - name: Docker login
+      uses: docker/login-action@v1
+      with:
+        registry: ${{ env.CONTAINER_REGISTRY }}
+        username: ${{ secrets.MENIGA_CR_USERNAME }}
+        password: ${{ secrets.MENIGA_CR_PASSWORD }}
+
+    - name: Docker push (Buildx)
+      run: |
+        imageTag="${{ env.CONTAINER_REGISTRY }}/${{ env.SERVICE_NAME }}:${GITHUB_REF##*/}-${{ env.SHA8 }}"
+
+        docker buildx build \
+        --cache-from "type=local,src=/tmp/.buildx-cache" \
+        --build-arg "NUGET_URL=${{ env.NUGET_URL }}" \
+        --build-arg "NUGET_USERNAME=${{ secrets.MENIGA_NUGET_USERNAME }}" \
+        --build-arg "NUGET_PASSWORD=${{ secrets.MENIGA_NUGET_PASSWORD }}" \
+        --push \
+        --tag $imageTag ./src

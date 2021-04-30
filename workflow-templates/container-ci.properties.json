@@ -1,0 +1,7 @@
+{
+  "name": "Container CI",
+  "description": "This workflow demonstrates how to build a docker container using docker buildx and caching image layers to GitHub cache to for faster builds. Additionally it lints the Dockerfile, scans for vulnerabilities and pushes the container if built of specific branches or a tag was pushed.",
+  "iconName": "dotnet",
+  "categories": [],
+  "filePatterns": []
+}

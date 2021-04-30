@@ -8,7 +8,6 @@
 name: Publish to GitHub Packages (.NET Framework)
 
 env:
-  NUGET_URL: https://nuget.pkg.github.com/meniga/index.json
   ## Replace <solution-file>
   ## Example: src/SampleService.sln
   SOLUTION_FILE: <solution-file>
