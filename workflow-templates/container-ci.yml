@@ -121,8 +121,7 @@ jobs:
         args: --exit-code 0 ${{ env.DEFAULT_IMAGE_TAG }}
 
   push:
-    ## Only push images if a tag was pushed or an image built from the
-    ## master or develop branches
+    ## Only push images built from a git tag or the master and develop branches
     if: |
       startsWith(github.ref, 'refs/tags')
       || endsWith(github.ref, '/master')
