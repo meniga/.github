@@ -51,7 +51,10 @@ jobs:
     ## Update the credentials for the github package source
     - name: Add Meniga NuGet Source
       run: |
-        nuget sources update -Name "github" -Username "meniga" -Password "${{ secrets.MENIGA_NUGET_PASSWORD }}"
+        nuget sources update `
+        -Name "github" `
+        -Username "meniga" `
+        -Password "${{ secrets.MENIGA_NUGET_PASSWORD }}"
 
     ## Caching requires the use of NuGet package lock files and is therefore
     ## disabled by default.
@@ -71,7 +74,13 @@ jobs:
 
     - name: MSBuild
       run: |
-        msbuild /t:restore,build /v:q /nologo /P:Configuration=Release ${{ env.SOLUTION_FILE }} /p:RestoreLockedMode=true /p:VisualStudioVersion=14.0 '/p:AllowedReferenceRelatedFileExtensions=".pdb;.xml;.pri"'
+        msbuild `
+        /t:restore,build `
+        /v:q /nologo `
+        /P:Configuration=Release ${{ env.SOLUTION_FILE }} `
+        /p:RestoreLockedMode=true `
+        /p:VisualStudioVersion=14.0 `
+        '/p:AllowedReferenceRelatedFileExtensions=".pdb;.xml;.pri"'
 
     - name: NuGet Package
       run: |
@@ -81,7 +90,11 @@ jobs:
         foreach($proj in ${{ env.PROJECT_LIST }})
         {
           echo "Packaging project: $proj"
-          nuget pack $proj -Version "$packageVersion" -Verbosity "detailed" -OutputDirectory "./out" -Properties "Configuration=Release;DependencyVersion=$packageVersion"
+          nuget pack $proj `
+          -Version "$packageVersion" `
+          -Verbosity "detailed" `
+          -OutputDirectory "./out" `
+          -Properties "Configuration=Release;DependencyVersion=$packageVersion"
         }
 
     ## List the packages being pushed
@@ -90,4 +103,7 @@ jobs:
 
     ## Push all the packages in the ./out directory
     - name: NuGet Push
-      run: nuget push ./out/*.nupkg -ApiKey "${{ secrets.GITHUB_TOKEN }}" -Source "github"
+      run: |
+        nuget push ./out/*.nupkg `
+        -ApiKey "${{ secrets.GITHUB_TOKEN }}" `
+        -Source "github"
