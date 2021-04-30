@@ -37,7 +37,7 @@ on:
     tags: ['*']
     paths-ignore:
     - '.github/**'
-    - '!.github/workflows/ci.yml'
+    - '!.github/workflows/container-ci.yml'
     - 'docs/**'
     - '*.md'
 
