@@ -52,7 +52,7 @@ jobs:
 
     - name: Run CI task using psake
       run: |
-        $env:OCTOPUS_DEPLOY_APIKEY = "${{ secrets.OCTOPUS_DEPLOY_APIKEY }}"
+        $env:OCTOPUS_DEPLOY_APIKEY = "${{ secrets.OCTOPUS_DEPLOY_API_KEY }}"
         psake ci
 
     # This is an example of how you can create a build artifact (.zip file)
