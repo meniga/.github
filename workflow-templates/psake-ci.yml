@@ -55,11 +55,22 @@ jobs:
         $env:OCTOPUS_DEPLOY_APIKEY = "${{ secrets.OCTOPUS_DEPLOY_API_KEY }}"
         psake ci
 
-    # This is an example of how you can create a build artifact (.zip file)
+    ## Uncomment the next two steps if you want to create an artifact
+    ## If a git tag was not being pushed, then we create an artifact
+    ## that contains the built packages
+    ## ref: https://wiki.meniga.net/display/DEVOPS/Migrate+build+process+to+GitHub+Actions+using+Windows+self-hosted+runner#MigratebuildprocesstoGitHubActionsusingWindowsself-hostedrunner-Moreadvancedbuildsteps
+    # - name: Add git tag to environment
+    #   if: startsWith(github.ref, 'refs/tags') == 'false'
+    #   id: set-packageversion
+    #   run: |
+    #     psake Set-PackageVersionOutput
+
+    ## Upload the artifact so that it is accessible from the workflow summary page
     # - name: Upload artifact
+    #   if: startsWith(github.ref, 'refs/tags') == 'false'
     #   uses: actions/upload-artifact@v2
     #   with:
-    #     name: <project-name>-<version>
+    #     name: ${{ env.PROJECT_NAME }}.${{ steps.set-packageversion.outputs.packageVersion }}
     #     path: build/Latest
     #     retention-days: 10
 
