@@ -1,5 +1,5 @@
 {
-  "name": "Auto-merge branches",
+  "name": "Automerge branches",
   "description": "This workflow attempts to merge branches. If merging fails it creates a PR.",
   "iconName": "git-merge",
   "categories": [],

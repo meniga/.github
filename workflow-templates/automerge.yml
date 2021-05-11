@@ -1,4 +1,4 @@
-name: Auto-merge branches
+name: Automerge branches
 
 env:
   SOURCE_BRANCH: master
@@ -19,18 +19,16 @@ jobs:
 
     ## Try to merge
     - name: merge
-      uses: mtanzi/action-automerge@v1
-      id: merge
+      uses: devmasx/merge-branch@v1.3.1
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        source: ${{ env.SOURCE_BRANCH }}
-        target: ${{ env.TARGET_BRANCH }}
-        webhook_url: "" # If present add the Slack webhook
+        github_token: ${{ github.token }}
+        from_branch: ${{ env.SOURCE_BRANCH }}
+        target_branch: ${{ env.TARGET_BRANCH }}
+        type: now
 
     ## In case merging fails, then create a PR
     - name: pull-request
       uses: repo-sync/pull-request@v2.5
-      id: auto-pr
       if: ${{ failure() }}
       with:
         destination_branch: ${{ env.TARGET_BRANCH }}
