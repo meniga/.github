@@ -1,5 +1,5 @@
 {
-  "name": "psake CI",
+  "name": "psake TryCI",
   "description": "This workflow is meant for repositories that still use the legacy build pipelines previously run in TeamCity",
   "iconName": "teamcity",
   "categories": [],
