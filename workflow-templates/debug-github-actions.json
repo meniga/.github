@@ -1,0 +1,7 @@
+{
+  "name": "Debug GitHub Actions",
+  "description": "This workflow simply logs various objects in the GitHub context, i.e. github, job, steps, runner, strategy and matrix.",
+  "iconName": "debugging",
+  "categories": [],
+  "filePatterns": []
+}

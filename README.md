@@ -19,6 +19,12 @@ and caching image layers to GitHub cache to for faster builds. Additionally it
 lints the Dockerfile, scans for vulnerabilities and pushes the container if 
 built of specific branches or a tag was pushed.
 
+## Debug GitHub Actions
+
+Logs various objects in the GitHub context, i.e. github, job, steps, runner, 
+strategy and matrix. Useful for troubleshooting workflows that are not running
+as expected.
+
 ## psake CI
 
 This workflow demonstrates how you can use a self-hosted Windows runner
