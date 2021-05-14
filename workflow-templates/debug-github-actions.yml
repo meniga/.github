@@ -2,7 +2,8 @@ name: Debug GitHub Actions
 
 on:
   # Run when pushing to any branch, adjust if needed
-  push: ['**']
+  push:
+    branches: ['**']
 
 jobs:
   debug:
