@@ -11,8 +11,10 @@ on:
 
 jobs:
   automerge:
-    name: Merge source branch into target branch or create pull request on merge failure
+    name: Try to merge, fallback to pull request
+
     runs-on: ubuntu-latest
+
     steps:
     - name: checkout
       uses: actions/checkout@v2
@@ -32,11 +34,13 @@ jobs:
       if: ${{ failure() }}
       with:
         destination_branch: ${{ env.TARGET_BRANCH }}
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        pr_title: "Auto PR from ${{ env.SOURCE_BRANCH }} to ${{ env.TARGET_BRANCH }}"
-        pr_body: |
-          :crown: This pull request was created automatically because there are changes in
-          the *${{ env.SOURCE_BRANCH }}* branch that need to be merged with the *${{ env.TARGET_BRANCH }}* branch.
+        github_token: ${{ github.token }}
+        pr_title: |
+          Auto PR from ${{ env.SOURCE_BRANCH }} to ${{ env.TARGET_BRANCH }}
+        pr_body: >
+          :crown: This pull request was created automatically because there
+          are changes in the *${{ env.SOURCE_BRANCH }}* branch that need to be
+          merged with the *${{ env.TARGET_BRANCH }}* branch.
         pr_reviewer: ""
         pr_assignee: ""
         pr_label: "auto-pr"
