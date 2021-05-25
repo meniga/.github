@@ -23,14 +23,15 @@ jobs:
     runs-on: [self-hosted, Windows]
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout
+      uses: actions/checkout@v2
       with:
         fetch-depth: 0
 
     # Fetching submodules with the checkout step fails because
     # it generates an invalid Windows path when storing the public SSH key
     - name: Update git submodules
-      run: git submodule update --init
+      run: git submodule update --init --recursive
 
     - name: Run TryCI task using psake
       run: psake tryci

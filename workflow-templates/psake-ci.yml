@@ -37,7 +37,8 @@ jobs:
     runs-on: [self-hosted, Windows]
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout
+      uses: actions/checkout@v2
       # Remove if you don't need to fetch all history for all branches and tags
       with:
         fetch-depth: 0
@@ -46,9 +47,8 @@ jobs:
     #
     # Fetching submodules with the actions/checkout action fails because
     # it generates an invalid Windows path when storing the public SSH key
-    # Tip: Add the --recursive flag if your submodules include other submodules
     - name: Update git submodules
-      run: git submodule update --init
+      run: git submodule update --init --recursive
 
     - name: Run CI task using psake
       run: |
