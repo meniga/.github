@@ -1,19 +1,10 @@
 name: psake TryCI
 
 on:
-  push:
-    # Run when pushing to any branch except for master
-    # Adjust according to your project
-    branches:
-    - '**'
-    - '!master'
-    - '!develop'
-
-    # Ignore changes made to these files
-    paths-ignore:
-    # Ignore everything in the .github directory except the psake-tryci.yml workflow file
-    - '.github/**'
-    - '!.github/workflows/psake-tryci.yml'
+  # Run this workflow when a pull request is opened, synchronized (code changes)
+  # and if a pull request is reopened
+  pull_request:
+    types: [opened, synchronize, reopened]
 
   # Enables manual triggering
   workflow_dispatch:
