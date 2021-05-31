@@ -1,29 +1,18 @@
 # In the last step that publishes a GitHub Release, be sure to adjust
 # the 'files' argument with the correct path of the built artifacts
-# that should be included in the release. Typically: build/Latest
+# that should be included in the release. The file should be an already packaged zip file.
 #
-# Also, if you need to upload build artifacts then you can uncomment
-# the "Upload artifact" build step. Remember to replace the placeholders
-# <project-name>-<version> with the correct artifact name
 name: psake CI
 
 # What should trigger this workflow to be executed
 on:
   # Define which push events should trigger this workflow
   push:
-    # Trigger this workflow when pushing to either the master or develop branch
+    # Trigger this workflow when new tag is created
     # Adjust according to your project
-    branches:
-    - master
-    - develop
-
-    tags: ['*']
-
-    # Ignore changes made to these files
-    paths-ignore:
-    # Ignore everything in the .github directory except the psake-ci.yml workflow file
-    - '.github/**'
-    - '!.github/workflows/psake-ci.yml'
+    tags: ["*"]
+  # Enable manual triggering
+  workflow_dispatch:
 
   ## Uncomment to run this workflow every Friday at midnight
   ## ref: https://docs.github.com/en/actions/reference/events-that-trigger-workflows#schedule
@@ -37,56 +26,51 @@ jobs:
     runs-on: [self-hosted, Windows]
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-      # Remove if you don't need to fetch all history for all branches and tags
-      with:
-        fetch-depth: 0
+      - name: Checkout
+        uses: actions/checkout@v2
+        # Remove if you don't need to fetch all history for all branches and tags
+        with:
+          fetch-depth: 0
 
-    # Remove this step if you are not using submodules
-    #
-    # Fetching submodules with the actions/checkout action fails because
-    # it generates an invalid Windows path when storing the public SSH key
-    - name: Update git submodules
-      run: git submodule update --init --recursive
+      # Remove this step if you are not using submodules
+      #
+      # Fetching submodules with the actions/checkout action fails because
+      # it generates an invalid Windows path when storing the public SSH key
+      - name: Update git submodules
+        run: git submodule update --init --recursive
 
-    - name: Run CI task using psake
-      run: |
-        $env:OCTOPUS_DEPLOY_APIKEY = "${{ secrets.OCTOPUS_DEPLOY_API_KEY }}"
-        psake ci
+      - name: Run CI task using psake
+        run: |
+          $env:OCTOPUS_DEPLOY_APIKEY = "${{ secrets.OCTOPUS_DEPLOY_API_KEY }}"
+          psake ci
 
-    ## Uncomment the next two steps if you want to create an artifact
-    ## If a git tag was not being pushed, then we create an artifact
-    ## that contains the built packages
-    ## ref: https://wiki.meniga.net/display/DEVOPS/Migrate+build+process+to+GitHub+Actions+using+Windows+self-hosted+runner#MigratebuildprocesstoGitHubActionsusingWindowsself-hostedrunner-Moreadvancedbuildsteps
-    # - name: Add git tag to environment
-    #   if: startsWith(github.ref, 'refs/tags') == 'false'
-    #   id: set-packageversion
-    #   run: |
-    #     psake Set-PackageVersionOutput
+      ## Uncomment the next two steps if you want to create an artifact
+      ## If a git tag was not being pushed, then we create an artifact
+      ## that contains the built packages
+      ## ref: https://wiki.meniga.net/display/DEVOPS/Migrate+build+process+to+GitHub+Actions+using+Windows+self-hosted+runner#MigratebuildprocesstoGitHubActionsusingWindowsself-hostedrunner-Moreadvancedbuildsteps
+      # - name: Add git tag to environment
+      #   if: startsWith(github.ref, 'refs/tags') == 'false'
+      #   id: set-packageversion
+      #   run: |
+      #     psake Set-PackageVersionOutput
 
-    ## Upload the artifact so that it is accessible from the workflow summary page
-    # - name: Upload artifact
-    #   if: startsWith(github.ref, 'refs/tags') == 'false'
-    #   uses: actions/upload-artifact@v2
-    #   with:
-    #     name: ${{ env.PROJECT_NAME }}.${{ steps.set-packageversion.outputs.packageVersion }}
-    #     path: build/Latest
-    #     retention-days: 10
+      # - name: Zip release
+      #   run: |
+      #     7za a -tzip "${{ steps.set-packageversion.outputs.packageVersion }}.zip" build/Latest
 
-    # Ideally, you would supply the action with a body that
-    # further explains the changes in the release
-    # For more information on how to customize the release
-    # ref: https://github.com/softprops/action-gh-release#-customizing
-    - name: Create release (if tag was pushed)
-      if: startsWith(github.ref, 'refs/tags')
-      uses: softprops/action-gh-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        draft: false
-        prerelease: false
-        # Adjust as needed, should point to the path(s) of the build output
-        # of the CI step
-        # Newline-delimited globs of paths to assets to upload for release
-        files: build/Latest
+      # Ideally, you would supply the action with a body that
+      # further explains the changes in the release
+      # For more information on how to customize the release
+      # ref: https://github.com/softprops/action-gh-release#-customizing
+      - name: Create release (if tag was pushed)
+        if: startsWith(github.ref, 'refs/tags')
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          draft: false
+          prerelease: false
+          # Adjust as needed, should point to the path(s) of the build output
+          # of the CI step
+          # Newline-delimited globs of paths to assets to upload for release
+          files: "${{ steps.set-packageversion.outputs.packageVersion }}.zip"
