@@ -1,10 +1,3 @@
-# In the last step that publishes a GitHub Release, be sure to adjust
-# the 'files' argument with the correct path of the built artifacts
-# that should be included in the release. Typically: build/Latest
-#
-# Also, if you need to upload build artifacts then you can uncomment
-# the "Upload artifact" build step. Remember to replace the placeholders
-# <project-name>-<version> with the correct artifact name
 name: psake CI
 
 # What should trigger this workflow to be executed
@@ -16,8 +9,6 @@ on:
     branches:
     - master
     - develop
-
-    tags: ['*']
 
     # Ignore changes made to these files
     paths-ignore:
@@ -54,39 +45,3 @@ jobs:
       run: |
         $env:OCTOPUS_DEPLOY_APIKEY = "${{ secrets.OCTOPUS_DEPLOY_API_KEY }}"
         psake ci
-
-    ## Uncomment the next two steps if you want to create an artifact
-    ## If a git tag was not being pushed, then we create an artifact
-    ## that contains the built packages
-    ## ref: https://wiki.meniga.net/display/DEVOPS/Migrate+build+process+to+GitHub+Actions+using+Windows+self-hosted+runner#MigratebuildprocesstoGitHubActionsusingWindowsself-hostedrunner-Moreadvancedbuildsteps
-    # - name: Add git tag to environment
-    #   if: startsWith(github.ref, 'refs/tags') == 'false'
-    #   id: set-packageversion
-    #   run: |
-    #     psake Set-PackageVersionOutput
-
-    ## Upload the artifact so that it is accessible from the workflow summary page
-    # - name: Upload artifact
-    #   if: startsWith(github.ref, 'refs/tags') == 'false'
-    #   uses: actions/upload-artifact@v2
-    #   with:
-    #     name: ${{ env.PROJECT_NAME }}.${{ steps.set-packageversion.outputs.packageVersion }}
-    #     path: build/Latest
-    #     retention-days: 10
-
-    # Ideally, you would supply the action with a body that
-    # further explains the changes in the release
-    # For more information on how to customize the release
-    # ref: https://github.com/softprops/action-gh-release#-customizing
-    - name: Create release (if tag was pushed)
-      if: startsWith(github.ref, 'refs/tags')
-      uses: softprops/action-gh-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        draft: false
-        prerelease: false
-        # Adjust as needed, should point to the path(s) of the build output
-        # of the CI step
-        # Newline-delimited globs of paths to assets to upload for release
-        files: build/Latest

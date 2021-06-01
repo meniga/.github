@@ -33,6 +33,14 @@ to migrate a legacy build process that relies on internal tooling and `psake`.
 > This workflow should only be used as a temporary solution for build processes
 that still rely on legacy build tools and cannot migrate to cloud runners 
 
+## psake release
+
+This workflow demonstrates how you can use a self-hosted Windows runner
+to migrate a legacy build process that relies on internal tooling and `psake`.
+
+It only runs when a git `tag` is pushed and creates a GitHub release that is
+linked to that `tag`.
+
 ## psake TryCI
 
 Same as psake CI, except for running `psake tryci`
