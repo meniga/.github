@@ -1,0 +1,63 @@
+## This workflow uses git tags to create releases in GitHub
+##
+name: psake release
+
+# What should trigger this workflow to be executed
+on:
+  # Define which push events should trigger this workflow
+  push:
+    # Trigger this workflow when new tag is created
+    tags: ["*"]
+
+# The actual workflow
+jobs:
+  release:
+    # This will execute the workflow on our self-hosted Windows VM
+    runs-on: [self-hosted, Windows]
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      # Remove if you don't need to fetch all history for all branches and tags
+      with:
+        fetch-depth: 0
+
+    # Remove this step if you are not using submodules
+    #
+    # Fetching submodules with the actions/checkout action fails because
+    # it generates an invalid Windows path when storing the public SSH key
+    - name: Update git submodules
+      run: git submodule update --init --recursive
+
+    - name: Run CI task using psake
+      run: |
+        $env:OCTOPUS_DEPLOY_APIKEY = "${{ secrets.OCTOPUS_DEPLOY_API_KEY }}"
+        psake ci
+
+    - name: Extract tag
+      id: ref
+      run: |
+        $tag = $env:GITHUB_REF -replace "refs/tags",""
+        echo "::set-output name=tag::$tag"
+
+    # Zip the contents in build/Latest
+    # Replace build/Latest with the correct output directory if needed
+    - name: Zip release
+      run: |
+        7za a -tzip "${{ steps.ref.outputs.tag }}.zip" build/Latest
+
+    # Ideally, you would supply the action with a body that
+    # further explains the changes in the release
+    # For more information on how to customize the release
+    # ref: https://github.com/softprops/action-gh-release#-customizing
+    - name: Create release
+      uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        draft: false
+        prerelease: false
+        # Adjust as needed, should point to the path(s) of the build output
+        # of the CI step
+        # Newline-delimited globs of paths to assets to upload for release
+        files: "${{ steps.ref.outputs.tag }}.zip"
