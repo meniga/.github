@@ -68,7 +68,9 @@ jobs:
     ## Remove the if statement if you always want to push packages
     ## or adjust as needed depending on your repository branch settings
     - name: Publish to GitHub Packages
-      if: endsWith(github.ref, '/master') || endsWith(github.ref, '/main')
+      if: |
+        endsWith(github.ref, '/main')
+        || endsWith(github.ref, '/master')
       run: |
         dotnet nuget push \
         ./out/${{ env.PROJECT_NAME }}.${{ steps.gitversion.outputs.nuGetVersion }}.nupkg \

@@ -7,6 +7,7 @@ on:
     # Trigger this workflow when pushing to either the master or develop branch
     # Adjust according to your project
     branches:
+    - main
     - master
     - develop
 
