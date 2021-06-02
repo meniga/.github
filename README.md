@@ -14,10 +14,9 @@ This workflow demonstrates how you can create a GitHub Release. It targets the
 
 ## Container CI
 
-This workflow demonstrates how to build a docker container using docker buildx 
-and caching image layers to GitHub cache to for faster builds. Additionally it 
-lints the Dockerfile, scans for vulnerabilities and pushes the container if 
-built of specific branches or a tag was pushed.
+This workflow demonstrates how to build a Linux Docker container. 
+Additionally it lints the Dockerfile, scans for vulnerabilities and pushes 
+the container if built of specific branches or a tag was pushed.
 
 ## Debug GitHub Actions
 
