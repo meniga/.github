@@ -1,0 +1,52 @@
+## Make sure to adjust the workflow as needed
+## Some assumptions made in this workflow:
+## * The project has multiple environments where each environment has some
+##   custom values stored in a 'values' directory at the root of your repository
+##   i.e. ./values/<env>.tfvars
+##   Example: ./values/dev.tfvars
+##
+## * The project is using our main Terraform backend and has a dedicated
+##   container called: <project-identifier>-<environment>
+##   Example: hydra-dev
+name: Terraform Apply
+
+on:
+  push:
+    branches:
+    - '$default-branch'
+    # Add branches as
+    paths-ignore:
+    - '**.md'
+    - '.github/**'
+    - '!.github/workflows/terraform-apply.yml'
+
+jobs:
+  terraform-apply:
+    name: Terraform Apply
+
+    env:
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+      ARM_ACCESS_KEY: ${{ secrets.ARM_ACCESS_KEY }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Setup
+      uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_version: 1.0.x
+
+    - name: Init
+      run: |
+        terraform init \
+        -backend-config="container_name=${{ env.PROJECT_IDENTIFIER }}-${GITHUB_REF#refs/heads/}"
+
+    - name: Apply
+      run: |
+        terraform apply \
+        -auto-approve \
+        -var-file="./values/${GITHUB_REF#refs/heads/}.tfvars"

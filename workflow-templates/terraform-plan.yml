@@ -1,0 +1,145 @@
+## Make sure to adjust the workflow as needed
+## Some assumptions made in this workflow:
+## * The project has multiple environments where each environment has some
+##   custom values stored in a 'values' directory at the root of your repository
+##   i.e. ./values/<env>.tfvars
+##   Example: ./values/dev.tfvars
+##
+## * The project is using our main Terraform backend and has a dedicated
+##   container called: <project-identifier>-<environment>
+##   Example: hydra-dev
+name: Terraform Plan
+
+env:
+  # Replace with your project identifier
+  # Example: hydra
+  PROJECT_IDENTIFIER: <project-identifier>
+
+on:
+  pull_request:
+    paths-ignore:
+    - '**.md'
+
+jobs:
+  cleanup-comments:
+    name: Cleanup comments
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Delete previous Terraform plan comments
+      uses: actions/github-script@v4
+      with:
+        script: |
+          const terraformMsg = `\n#### Terraform`
+          const warningMsg = `### WARNING`
+
+          const comments = await github.paginate(
+            "GET /repos/{owner}/{repo}/issues/{issue}/comments",
+            {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue: context.issue.number,
+            },
+            res => res.data
+              .filter(c => (
+                c.user.type === 'Bot' && c.body
+                && (c.body.startsWith(terraformMsg) || c.body.startsWith(warningMsg))
+              ))
+              .map(c => ({ id: c.id }))
+          ) || []
+
+          comments.forEach(c => {
+            console.log(`Deleting comment with ID: ${c.id}`)
+
+            github.issues.deleteComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: c.id,
+            })
+          })
+
+  terraform-plan:
+    name: Terraform Plan
+
+    env:
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+      ARM_ACCESS_KEY: ${{ secrets.ARM_ACCESS_KEY }}
+
+    runs-on: ubuntu-latest
+
+    # We want to make sure the cleanup happens before we comment on the PR
+    needs: cleanup-comments
+
+    # In case the cleanup-comments job fails
+    if: always()
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Setup
+      uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_version: 1.0.x
+
+    - name: Format
+      id: fmt
+      run: terraform fmt -check
+
+    - name: Init
+      id: init
+      run: |
+        terraform init \
+        -backend-config="container_name=${{ env.PROJECT_IDENTIFIER }}-${GITHUB_BASE_REF}"
+
+    - name: Validate
+      id: validate
+      run: terraform validate -no-color
+
+    - name: Plan
+      id: plan
+      run: |
+        terraform plan \
+        -no-color \
+        -var-file="./values/${GITHUB_BASE_REF}.tfvars"
+
+    - name: Pull Request output
+      uses: actions/github-script@v4
+      if: always()
+      env:
+        PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
+      with:
+        script: |
+          let output = `
+          #### Terraform Format and Style 🖌 \`${{ steps.fmt.outcome }}\`
+          #### Terraform Initialization ⚙️ \`${{ steps.init.outcome }}\`
+          #### Terraform Validation 🤖 \`${{ steps.validate.outcome }}\`
+          #### Terraform Plan 📖 \`${{ steps.plan.outcome }}\`
+
+          <details>
+          <summary>Show Plan</summary>
+
+          \`\`\`
+          ${process.env.PLAN}
+          \`\`\`
+
+          </details>
+
+          *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+          if (output.includes('# forces replacement')) {
+            output = `### WARNING
+            > The following plan will delete some resources and recreate them.
+            Please verify the plan to make sure this is what you want.
+
+            ${output}`
+          }
+
+          github.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: output
+          })

@@ -1,0 +1,7 @@
+{
+  "name": "Terraform Plan",
+  "description": "Workflow that runs on PRs and comments a Terraform plan on the PR.",
+  "iconName": "terraform",
+  "categories": [],
+  "filePatterns": []
+}

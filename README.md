@@ -54,3 +54,30 @@ registry. This workflow is not compatible with .NET Framework projects.
 Demonstrates how you can publish NuGet packages to the Meniga GitHub Package
 registry. Only meant for .NET Framework projects that rely on Windows for 
 building.
+
+## Terraform Plan
+
+This workflow is meant to be run whenever a new pull request is created or when
+said pull request is updated. It creates a Terraform plan according to the 
+changes made to the project and comments the output of the plan in addition 
+to some other useful information gathered by Terraform.
+
+The workflow is split up into two jobs.
+
+### terraform-plan
+
+Creates the plan as previously mentioned and comments on the pull request.
+
+### cleanup-comments
+
+This job executes before the `terraform-plan` job and all it does is remove 
+previous comments on the pull request since those plans have become stale.
+
+## Terraform Apply
+
+This workflow is meant to run when changes in a pull request have been merged 
+with one of the main branches in the repository. It applies the Terraform plan
+that was created in the pull request. Pushing changes directly to the branches 
+defined in the trigger will also run `terraform apply` but you will not get a 
+chance to review the plan, so we strongly encourage the use of the 
+[Terraform Plan](./workflow-templates/terraform-plan.yml) workflow.

@@ -1,0 +1,7 @@
+{
+  "name": "Terraform Apply",
+  "description": "Workflow that runs on when changes are pushed to the main branches.",
+  "iconName": "terraform",
+  "categories": [],
+  "filePatterns": []
+}
