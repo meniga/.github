@@ -103,6 +103,7 @@ jobs:
       run: |
         terraform plan \
         -no-color \
+        -input=false \
         -var-file="./values/${GITHUB_BASE_REF}.tfvars"
 
     - name: Pull Request output
