@@ -16,7 +16,7 @@ on:
         required: false
         type: string  
     secrets:
-      automerge-pat:
+      github-token:
         required: true
 
 jobs:
@@ -95,7 +95,7 @@ jobs:
       if: steps.target.outputs.branch != ''
       with:
         destination_branch: ${{ steps.target.outputs.branch }}
-        github_token: ${{ secrets.automerge-pat }}
+        github_token: ${{ secrets.github-token }}
         pr_title: |
           Auto PR from ${{ steps.source.outputs.branch }}
           to ${{ steps.target.outputs.branch }}
