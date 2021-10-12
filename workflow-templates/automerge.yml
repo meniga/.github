@@ -1,13 +1,13 @@
 name: Automerge branches
 
 env:
-  MAIN_BRANCH: master # Set your Main branch here
+  MAIN_BRANCH: main # Set your Main branch here
   MAJOR_VERSION: 3 # The current major version of the repo
   IGNORE_TARGETS: "example/1.1 example/1.2" # Comma separated list of target branches to ignore, is optional and can be removed
 on:
   push:
     branches: # Set the branches that you want to trigger automerge for on push
-      - master 
+      - main 
       - example/*
 jobs:
   automerge:
