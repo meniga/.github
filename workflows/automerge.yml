@@ -88,11 +88,20 @@ jobs:
  
         echo "::debug::Target branch -> $target_branch"
         echo "::set-output name=branch::$target_branch"
-  
+
+    # Try to merge
+    - name: Merge branches
+      uses: devmasx/merge-branch@v1.3.1
+      if: steps.target.outputs.branch != ''
+      with:
+        github_token: ${{ secrets.AUTOMERGE_PAT }}
+        target_branch: ${{ steps.target.outputs.branch }}
+        type: now
+
     # Fallback to creating a pull request
     - name: Create pull request
       uses: repo-sync/pull-request@v2.5
-      if: steps.target.outputs.branch != ''
+      if: (failure() && steps.target.outputs.branch != '')
       with:
         destination_branch: ${{ steps.target.outputs.branch }}
         github_token: ${{ secrets.github-token }}
@@ -106,3 +115,8 @@ jobs:
         pr_reviewer: ""
         pr_assignee: ""
         pr_label: "auto-pr"
+
+    ## Print the URL of the pull request
+    - name: output-url
+      if: (failure() && steps.target.outputs.branch != '')
+      run: echo "Pull Request URL -> ${{ steps.open-pr.outputs.pr_url }}"
