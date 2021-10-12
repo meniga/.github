@@ -21,4 +21,4 @@ jobs:
         main-branch: ${{ env.MAIN_BRANCH }}
         ignore-targets: ${{ env.IGNORE_TARGETS }}
       secrets:
-        automerge-pat: ${{ secrets.AUTOMERGE_PAT }}
+        github-token: ${{ secrets.AUTOMERGE_PAT }}
