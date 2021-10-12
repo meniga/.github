@@ -23,7 +23,7 @@ jobs:
     - name: merge
       uses: devmasx/merge-branch@v1.3.1
       with:
-        github_token: ${{ github.token }}
+        github_token: ${{ secrets.AUTOMERGE_PAT }}
         from_branch: ${{ env.SOURCE_BRANCH }}
         target_branch: ${{ env.TARGET_BRANCH }}
         type: now
