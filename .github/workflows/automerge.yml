@@ -9,7 +9,7 @@ on:
       major-version:
         required: true
         type: string
-      main-branch:
+      main_branch:
         required: true
         type: string
       ignore-targets:
@@ -50,9 +50,9 @@ jobs:
       id: target
       run: |
         source_branch="${{ steps.source.outputs.branch }}"
-        main-branch="${{ inputs.main-branch }}"
+        main_branch="${{ inputs.main_branch }}"
         
-        if [[ "$source_branch" == "$main-branch" ]]; then
+        if [[ "$source_branch" == "$main_branch" ]]; then
             echo "::set-output name=branch::develop"
             exit 0
         fi
@@ -69,12 +69,12 @@ jobs:
         release_branches=${release_branches//$'\n'/ }
  
         # Add the main branch to the list of target branches
-        target_branches="$release_branches $main-branch"
+        target_branches="$release_branches $main_branch"
  
         echo "::debug::Calling Python script with arguments"
         echo "::debug::--branches $target_branches"
         echo "::debug::--ignore ${{ inputs.ignore-targets }}"
-        echo "::debug::--main $main-branch"
+        echo "::debug::--main $main_branch"
         echo "::debug::--source $source_branch"
  
         # Executes a Python script that will determine the next target branch
@@ -82,7 +82,7 @@ jobs:
           python ${{ env.PYTHON_SCRIPT }} \
           --branches $target_branches \
           --ignore ${{ inputs.ignore-targets }} \
-          --main $main-branch \
+          --main $main_branch \
           --source $source_branch \
         )
  
