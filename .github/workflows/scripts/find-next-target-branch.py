@@ -21,7 +21,7 @@ parser.add_argument(
   '--ignore',
   type=str,
   nargs='+',
-  required=False,
+  required=True,
   help='Space separated list of branches that should be excluded as targets',
 )
 
@@ -91,7 +91,7 @@ def main():
 
   source_branch = args.source[0]
   target_branches = args.branches
-  ignore_branches = args.ignore or ""
+  ignore_branches = args.ignore
   main_branch = args.main[0]
 
   exclude_branches = remove_ignored_branches(target_branches, ignore_branches)

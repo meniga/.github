@@ -83,7 +83,7 @@ jobs:
         target_branch=$(\
           python ${{ env.PYTHON_SCRIPT }} \
           --branches $target_branches \
-          --ignore ${{ inputs.ignore-targets }} \
+          --ignore "${{ inputs.ignore-targets }}" \
           --main $main_branch \
           --source $source_branch \
         )
