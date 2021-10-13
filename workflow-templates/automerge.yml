@@ -1,24 +1,50 @@
 name: Automerge branches
 
 env:
-  MAIN_BRANCH: master # Set your Main branch here
-  MAJOR_VERSION: 3 # The current major version of the repo
-  IGNORE_TARGETS: "example/1.1 example/1.2" # Comma separated list of target branches to ignore, is optional and can be removed
+  SOURCE_BRANCH: master
+  TARGET_BRANCH: develop
+
 on:
   push:
-    branches: # Set the branches that you want to trigger automerge for on push
-      - master 
-      - example/*
+    branches:
+    - master # REPLACE WITH YOUR SOURCE BRANCH
+
 jobs:
   automerge:
-    name: Try to merge, fallback to creating pull requests
+    name: Try to merge, fallback to pull request
+
+    runs-on: ubuntu-latest
 
     steps:
-    - name Call automerge
-      uses: meniga/.github/workflow/automerge@v1
+    - name: checkout
+      uses: actions/checkout@v2
+
+    ## Try to merge
+    - name: merge
+      uses: devmasx/merge-branch@v1.3.1
       with:
-        major-version: ${{ env.MAJOR_VERSION }}
-        main-branch: ${{ env.MAIN_BRANCH }}
-        ignore-targets: ${{ env.IGNORE_TARGETS }}
-      secrets:
-        automerge-pat: ${{ secrets.AUTOMERGE_PAT }}
+        github_token: ${{ secrets.AUTOMERGE_PAT }}
+        from_branch: ${{ env.SOURCE_BRANCH }}
+        target_branch: ${{ env.TARGET_BRANCH }}
+        type: now
+
+    ## In case merging fails, then create a PR
+    - name: pull-request
+      uses: repo-sync/pull-request@v2.5
+      if: ${{ failure() }}
+      with:
+        destination_branch: ${{ env.TARGET_BRANCH }}
+        github_token: ${{ github.token }}
+        pr_title: |
+          Auto PR from ${{ env.SOURCE_BRANCH }} to ${{ env.TARGET_BRANCH }}
+        pr_body: >
+          :crown: This pull request was created automatically because there
+          are changes in the *${{ env.SOURCE_BRANCH }}* branch that need to be
+          merged with the *${{ env.TARGET_BRANCH }}* branch.
+        pr_reviewer: ""
+        pr_assignee: ""
+        pr_label: "auto-pr"
+
+    ## Print the URL of the pull request
+    - name: output-url
+      run: echo "Pull Request URL -> ${{ steps.open-pr.outputs.pr_url }}"
