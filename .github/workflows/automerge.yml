@@ -1,7 +1,7 @@
 name: Complex Automerge
 
 env:
-  PYTHON_SCRIPT: "scripts/find-next-target-branch.py"
+  PYTHON_SCRIPT: ".github/workflows/scripts/find-next-target-branch.py"
 
 on:
   workflow_call:
