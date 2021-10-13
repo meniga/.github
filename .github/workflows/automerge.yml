@@ -29,6 +29,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
       with:
+        repository: meniga/.github
         fetch-depth: 0
  
     - name: Setup Python
