@@ -81,30 +81,3 @@ that was created in the pull request. Pushing changes directly to the branches
 defined in the trigger will also run `terraform apply` but you will not get a 
 chance to review the plan, so we strongly encourage the use of the 
 [Terraform Plan](./workflow-templates/terraform-plan.yml) workflow.
-
-# Workflows
-## Complex Automerge
-This workflow enables a easy implementation of complex automerges in every reposity.
-### Usage example
-workflow.yml: 
-```
-name: Automerge Example
-
-on:
-  push:
-  - main
-  - example/*
-
-jobs:
-  complex-automerge:
-    name: Complex Automerge
-
-    steps:
-    -name Call automerge
-    with:
-      major-version: 3
-      main-branch: main
-      ignore-targets: "example/1.1 example/1.2"
-    secrets:
-      github-token: ${{ secrets.AUTOMERGE_PAT }}
-```
