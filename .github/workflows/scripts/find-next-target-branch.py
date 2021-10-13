@@ -49,7 +49,7 @@ release_reg = r'^release\/\d+\.\d+$'
 rx_release = re.compile(release_reg)
 
 # Used to retrieve the minor version of a release branch
-def get_minor_version(x): return int(x.partition('.')[2])
+def get_minor_version(x): return int(x.partition('.')[2] or 0)
 
 # Compare function fors sorting release branches by ascending minor version
 def cmp_release_branches(x, y):
