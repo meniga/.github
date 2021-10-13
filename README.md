@@ -92,7 +92,7 @@ name: Automerge Example
 
 on:
   push:
-  - main
+  - master
   - example/*
 
 jobs:
@@ -103,7 +103,7 @@ jobs:
     -name Call automerge
     with:
       major-version: 3
-      main-branch: main
+      main-branch: master
       ignore-targets: "example/1.1 example/1.2"
     secrets:
       github-token: ${{ secrets.AUTOMERGE_PAT }}
