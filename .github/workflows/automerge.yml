@@ -9,7 +9,7 @@ on:
       major-version:
         required: true
         type: string
-      main_branch:
+      main-branch:
         required: true
         type: string
       ignore-targets:
@@ -50,7 +50,7 @@ jobs:
       id: target
       run: |
         source_branch="${{ steps.source.outputs.branch }}"
-        main_branch="${{ inputs.main_branch }}"
+        main_branch="${{ inputs.main-branch }}"
         
         if [[ "$source_branch" == "$main_branch" ]]; then
             echo "::set-output name=branch::develop"
