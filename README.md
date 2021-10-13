@@ -106,5 +106,5 @@ jobs:
       main-branch: master
       ignore-targets: "example/1.1 example/1.2"
     secrets:
-      github-token: ${{ secrets.AUTOMERGE_PAT }}
+      automerge-pat: ${{ secrets.AUTOMERGE_PAT }}
 ```
