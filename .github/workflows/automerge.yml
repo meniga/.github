@@ -16,6 +16,8 @@ on:
         required: false
         type: string  
     secrets:
+      automerge-pat:
+        required: true
       github-token:
         required: true
 
@@ -96,13 +98,13 @@ jobs:
       uses: devmasx/merge-branch@v1.3.1
       if: steps.target.outputs.branch != ''
       with:
-        github_token: ${{ secrets.github-token }}
+        github_token: ${{ secrets.automerge-pat }}
         target_branch: ${{ steps.target.outputs.branch }}
         type: now
 
     # Fallback to creating a pull request
     - name: Create pull request
-      uses: repo-sync/pull-request@v2.5
+      uses: repo-sync/pull-request@v2
       if: (failure() && steps.target.outputs.branch != '')
       with:
         destination_branch: ${{ steps.target.outputs.branch }}
