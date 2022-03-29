@@ -26,7 +26,7 @@ on:
 jobs:
   ci:
     # This will execute the workflow on our self-hosted Windows VM
-    runs-on: [self-hosted, Windows]
+    runs-on: [self-hosted, Windows, CI, MSBuild-16.9]
 
     steps:
     - name: Checkout
