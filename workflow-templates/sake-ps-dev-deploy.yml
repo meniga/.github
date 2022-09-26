@@ -1,0 +1,28 @@
+name: PS-Dev Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_name:
+        description: |
+          Release name of the current repository to use packages from. Defaults to latest release.
+        type: string
+        default: ''
+        required: false
+
+jobs:
+  call-workflow:
+    uses: Meniga/reusable-workflows-ps/.github/workflows/deploy.yml@v1
+    with:
+      runner_label: PS-Dev
+      project_name: ''
+      release_name: ${{ inputs.release_name }}
+      environment: PS-Dev
+      sake_tasks: ''
+      sake_properties: ''
+      sake_uninstall_tasks: ''
+      sake_uninstall_properties: ''
+    secrets:
+      repo_access_token: ${{ secrets.GH_ACTIONS_REPO_ACCESS }}
+      deployment_user_name: ${{ secrets.MSA_BUILDER_USERNAME }}
+      deployment_user_password: ${{ secrets.MSA_BUILDER_PASSWORD }}
