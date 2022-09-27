@@ -1,0 +1,7 @@
+{
+    "name": "Sake PS-Dev Deploy",
+    "description": "This workflow is meant for migration from Octopus Deploy and assumes compatibility with new ps.buildscripts. It's deploying to PS-Dev machine.",
+    "iconName": "octopus-deploy",
+    "categories": [],
+    "filePatterns": []
+}
